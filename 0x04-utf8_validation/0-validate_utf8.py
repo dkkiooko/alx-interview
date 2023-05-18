@@ -1,6 +1,21 @@
 #!/usr/bin/python3
 """ validate whether data set is a valid UTF-8 encoding """
 from typing import List
+from itertools import takewhile
+
+
+def int_to_bits(nums):
+    """
+    Helper function
+    Convert ints to bits
+    """
+    for num in nums:
+        bits = []
+        mask = 1 << 8  # cause we have 8 bits per byte. adds up to (11111111)
+        while mask:
+            mask >>= 1
+            bits.append(bool(num & mask))
+        yield bits
 
 
 def validUTF8(data: List[int]) -> bool:
@@ -12,33 +27,24 @@ def validUTF8(data: List[int]) -> bool:
     Returns:
         bool: _whether data is vaild or not_
     """
-    # number of bytes in UTF-8 character
-    count = 0
+    bits = int_to_bits(data)
+    for byte in bits:
+        # if single byte char, then valid. continue
+        if byte[0] == 0:
+            continue
 
-    for num in data:
-        # loop through to check whether dataset complies
-        if count == 0:
-            # if first code point, there can be multiple bytes starting with 0
-            if num & 128 == 0:
-                count = 0
-            elif num & 224 == 192:
-                # if second code point, MSB must be 11
-                count = 1
-            elif num & 240 == 224:
-                # if 3rd code point, MSB must be 111
-                count = 2
-            elif num & 248 == 240:
-                # 4th code point, MSB Must be 1111
-                count = 3
-            else:
-                # no other valid utf-8 encoding
+        # if here, byte is multi-byte char
+        ones = sum(takewhile(bool, byte))
+        if ones <= 1:
+            return False
+        if ones >= 4:  # UTF-8 can be 1 to 4 bytes long
+            return False
+
+        for _ in range(ones - 1):
+            try:
+                byte = next(bits)
+            except StopIteration:
                 return False
-        else:
-            if num & 192 != 128:
-                # if not first byte, MSB must be 10
+            if byte[0:2] != [1, 0]:
                 return False
-            # reduce count to appropriate number of bytes
-            count -= 1
-        if count == 0:
-            return True
-        return False
+    return True
