@@ -13,31 +13,32 @@ def validUTF8(data: List[int]) -> bool:
         bool: _whether data is vaild or not_
     """
     # number of bytes in UTF-8 character
-    n_bytes = 0
-
-    # mask to check if MSB is active
-    mask1 = 1 << 7
-
-    # mask to check if 2nd MSB is active
-    mask2 = 1 << 6
+    count = 0
 
     for num in data:
-        # for first byte(s) check number of active MSBs
-        mask = 1 << 7
-        if n_bytes == 0:
-            while mask & num:
-                n_bytes += 1
-                mask = mask >> 1
-            if n_bytes == 0:
-                # 1 byte characters
-                continue
-            if n_bytes == 1 or n_bytes > 4:
-                # invalid scenario if 1, then not valid
-                # if larger than 4, then invalid utf-8 coz max is 4
+        # loop through to check whether dataset complies
+        if count == 0:
+            # if first code point, there can be multiple bytes starting with 0
+            if num & 128 == 0:
+                count = 0
+            elif num & 224 == 192:
+                # if second code point, MSB must be 11
+                count = 1
+            elif num & 240 == 224:
+                # if 3rd code point, MSB must be 111
+                count = 2
+            elif num & 248 == 240:
+                # 4th code point, MSB Must be 1111
+                count = 3
+            else:
+                # no other valid utf-8 encoding
                 return False
         else:
-            # look at the 2 MSBs make sure its 10
-            if not (num & mask1 and not (num & mask2)):
+            if num & 192 != 128:
+                # if not first byte, MSB must be 10
                 return False
-        n_bytes -= 1
-    return n_bytes == 0
+            # reduce count to appropriate number of bytes
+            count -= 1
+        if count == 0:
+            return True
+        return False
