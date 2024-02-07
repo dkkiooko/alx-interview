@@ -1,7 +1,21 @@
-0. Pascal's Triangle 
+#  alx-interview
 
-Create a function def pascal_triangle(n): that returns a list of lists of integers representing the Pascal’s triangle of n:
+## Prerequisites
 
-    Returns an empty list if n <= 0
-    You can assume n will be always an integer
+alx africa foundations 9 months
 
+## Built With
+
+- Python 3xx
+
+## Contributing
+
+-- Daniel Kioko
+
+## Versioning
+
+For my learning
+
+## Authors
+
+--- Daniel Kioko kithekadankioko@gmail.com
